@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thinking Orbs — Expanded & High-Motion</title>
+<style>
+:root{color-scheme:light;--bg:#f4f5f7;--panel:#fff;--ink:#17191d;--muted:#777d87;--line:#e6e8ec;--soft:#f7f8fa;--accent:#20242b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:28px}
+.demo{width:min(940px,100%);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 18px 55px rgba(20,25,35,.07)}
+.stage{min-height:560px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:var(--soft);border-right:1px solid var(--line);padding:36px}
+.stage:before{content:"";position:absolute;inset:18px;border:1px solid rgba(130,138,150,.12);border-radius:14px;pointer-events:none}
+.orb-wrap{width:270px;height:270px;display:grid;place-items:center;position:relative}
+canvas{width:100%;height:100%;display:block;overflow:visible}
+.status{margin-top:20px;font-size:13px;font-weight:500;color:var(--muted);letter-spacing:.01em}
+.controls{padding:28px 26px;display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;color:#9298a2;text-transform:uppercase;margin-bottom:6px}
+h1{font-size:20px;line-height:1.2;margin:0;font-weight:650;letter-spacing:-.035em}
+.sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+.field{display:flex;flex-direction:column;gap:9px}
+.field-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600}
+.value{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+select,input[type=range]{width:100%}
+select{appearance:none;background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px 36px 11px 12px;color:var(--ink);font:inherit;font-size:12px;font-weight:500;outline:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23777d87' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+input[type=range]{accent-color:#292d34;cursor:pointer}
+.pills{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.pill{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 10px;font-size:11px;font-weight:500;color:#646b75;cursor:pointer;transition:.18s}
+.pill.active{background:#22262d;border-color:#22262d;color:#fff}
+.actions{display:flex;gap:8px;margin-top:auto;padding-top:4px}
+button{font:inherit}
+.action{border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:12px;font-weight:500;padding:10px 14px;cursor:pointer;flex:1;transition:.15s}
+.action:hover{opacity:.88}
+.action.primary{background:#22262d;border-color:#22262d;color:#fff}
+.note{font-size:10px;color:#9aa0a9;line-height:1.5;margin-top:-6px}
+body.dark{color-scheme:dark;--bg:#101216;--panel:#181b21;--ink:#f0f1f3;--muted:#9da4af;--line:#30343d;--soft:#14171c;--accent:#f0f1f3}
+body.dark .stage{background:var(--soft)}
+body.dark select,body.dark .pill,body.dark .action{background:#20242b;color:#e8eaf0;border-color:#363b45}
+body.dark .pill.active,body.dark .action.primary{background:#f0f1f3;color:#17191d;border-color:#f0f1f3}
+body.dark input[type=range]{accent-color:#eee}
+@media(max-width:700px){body{padding:12px}.demo{grid-template-columns:1fr}.stage{min-height:380px;border-right:0;border-bottom:1px solid var(--line)}.orb-wrap{width:220px;height:220px}.controls{padding:24px}}
+</style>
+</head>
+<body>
+<main class="demo">
+  <section class="stage">
+    <div class="orb-wrap"><canvas id="orb" role="img" aria-label="Working"></canvas></div>
+    <div class="status" id="status">Working…</div>
+  </section>
+  <section class="controls">
+    <header>
+      <div class="eyebrow">Vanilla canvas animation</div>
+      <h1>Thinking Orbs</h1>
+      <div class="sub">16 high-visibility animated states for AI assistants and agent interfaces.</div>
+    </header>
+    <div class="field">
+      <div class="field-head"><label for="state">Animation state</label></div>
+      <select id="state">
+        <optgroup label="Core States (Enhanced)">
+          <option value="working">Working (Orbital Swirl)</option>
+          <option value="searching">Searching (Radar Sweep)</option>
+          <option value="solving">Solving (Quantum Scramble)</option>
+          <option value="listening">Listening (Audio Wave)</option>
+          <option value="connecting">Connecting (Neural Mesh)</option>
+          <option value="weaving">Weaving (Helix Braid)</option>
+          <option value="composing">Composing (Ribbon Flow)</option>
+          <option value="breathing">Breathing (Deep Pulse)</option>
+          <option value="shaping">Shaping (Morphing Geometry)</option>
+        </optgroup>
+        <optgroup label="New States">
+          <option value="vortex">Vortex (Tornado Funnel)</option>
+          <option value="exploding">Exploding (Supernova Burst)</option>
+          <option value="magnetic">Magnetic (Dipole Field)</option>
+          <option value="glitching">Glitching (Slice Shift)</option>
+          <option value="rippling">Rippling (Shockwave)</option>
+          <option value="orbiting">Orbiting (Planetary Rings)</option>
+          <option value="crystallizing">Crystallizing (Lattice Snap)</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="field">
+      <div class="field-head"><label>Size</label><span class="value" id="sizeValue">270px</span></div>
+      <input id="size" type="range" min="140" max="340" step="10" value="270">
+    </div>
+    <div class="field">
+      <div class="field-head"><label>Speed</label><span class="value" id="speedValue">1.0×</span></div>
+      <input id="speed" type="range" min="0.25" max="2.5" step="0.05" value="1">
+    </div>
+    <div class="field">
+      <div class="field-head"><label>Intensity</label><span class="value" id="intensityValue">1.0×</span></div>
+      <input id="intensity" type="range" min="0.5" max="1.8" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <div class="field-head"><label>Appearance</label></div>
+      <div class="pills">
+        <button class="pill active" data-theme="light">Light</button>
+        <button class="pill" data-theme="dark">Dark</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="action" id="pause">Pause</button>
+      <button class="action primary" id="restart">Replay</button>
+    </div>
+    <div class="note">Canvas 2D · 16 States · Dynamic Depth & Trails · Zero Dependencies</div>
+  </section>
+</main>
+
+<script>
+const canvas = document.getElementById('orb');
+const ctx = canvas.getContext('2d');
+const stateEl = document.getElementById('state');
+const sizeEl = document.getElementById('size');
+const speedEl = document.getElementById('speed');
+const intensityEl = document.getElementById('intensity');
+const statusEl = document.getElementById('status');
+const pauseBtn = document.getElementById('pause');
+
+const labels = {
+  working: 'Working…',
+  searching: 'Searching…',
+  solving: 'Solving…',
+  listening: 'Listening…',
+  connecting: 'Connecting…',
+  weaving: 'Weaving…',
+  composing: 'Composing…',
+  breathing: 'Breathing…',
+  shaping: 'Shaping…',
+  vortex: 'Vortexing…',
+  exploding: 'Synthesizing Burst…',
+  magnetic: 'Aligning Poles…',
+  glitching: 'Recalibrating…',
+  rippling: 'Broadcasting…',
+  orbiting: 'Orbiting Systems…',
+  crystallizing: 'Structuring Data…'
+};
+
+let state = 'working',
+    speed = 1,
+    intensity = 1,
+    paused = false,
+    started = performance.now(),
+    size = 270,
+    theme = 'light',
+    raf = 0;
+
+// Increased dot density slightly for richer shapes
+const dots = [];
+for (let r = 1; r < 15; r++) {
+  const lat = -Math.PI / 2 + (r * Math.PI) / 15;
+  const count = Math.max(10, Math.round(42 * Math.cos(lat)));
+  for (let j = 0; j < count; j++) {
+    dots.push({
+      lat,
+      lon: (j / count) * Math.PI * 2,
+      seed: Math.random() * Math.PI * 2,
+      seed2: Math.random(),
+      band: r,
+      index: j,
+      count
+    });
+  }
+}
+
+function resize() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.round(rect.width * dpr);
+  canvas.height = Math.round(rect.height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function setSize(v) {
+  size = +v;
+  const wrap = document.querySelector('.orb-wrap');
+  wrap.style.width = size + 'px';
+  wrap.style.height = size + 'px';
+  document.getElementById('sizeValue').textContent = size + 'px';
+  resize();
+}
+
+function project(p, t) {
+  let x = Math.cos(p.lat) * Math.cos(p.lon);
+  let y = Math.sin(p.lat);
+  let z = Math.cos(p.lat) * Math.sin(p.lon);
+
+  // Base continuous rotation
+  const rotSpeed = state === 'vortex' ? 0.0012 : state === 'orbiting' ? 0.0008 : 0.00045;
+  const rot = t * rotSpeed;
+  let rx = x * Math.cos(rot) - z * Math.sin(rot);
+  let rz = x * Math.sin(rot) + z * Math.cos(rot);
+  x = rx;
+  z = rz;
+
+  let xx = x, yy = y, zz = z;
+  let boost = 0; // Extra dot size & brightness boost for active zones
+  const amp = intensity;
+
+  // --- ORIGINAL 9 STATES (BOOSTED AMPLITUDE & VISIBILITY) ---
+  if (state === 'working') {
+    const a = t * 0.0014 + p.seed;
+    const swirl = Math.sin(t * 0.001 + p.band * 0.5) * 0.24 * amp;
+    xx += Math.cos(a) * swirl;
+    zz += Math.sin(a) * swirl;
+    yy += Math.sin(a * 1.5) * 0.08 * amp;
+    boost = Math.max(0, Math.sin(a)) * 0.4;
+  }
+
+  if (state === 'searching') {
+    const scan = (t * 0.0022) % (Math.PI * 2);
+    const d = Math.atan2(Math.sin(p.lon - scan), Math.cos(p.lon - scan));
+    const pulse = Math.exp(-d * d * 8);
+    xx *= 1 + pulse * 0.34 * amp;
+    zz *= 1 + pulse * 0.34 * amp;
+    yy += pulse * 0.16 * amp;
+    boost = pulse * 1.3;
+  }
+
+  if (state === 'solving') {
+    const cycle = Math.sin(t * 0.0025);
+    const chaos = Math.max(0, cycle) * 0.42 * amp;
+    xx += Math.sin(t * 0.009 + p.band * 3 + p.seed) * chaos;
+    yy += Math.cos(t * 0.008 + p.index + p.seed) * chaos;
+    zz += Math.sin(t * 0.007 + p.seed * 2) * chaos;
+    boost = chaos * 1.8;
+  }
+
+  if (state === 'listening') {
+    const wave1 = Math.sin(p.lon * 4 - t * 0.0065) * 0.32;
+    const wave2 = Math.cos(p.lat * 5 + t * 0.005) * 0.18;
+    const total = (wave1 + wave2) * Math.cos(p.lat * 0.7) * amp;
+    yy += total;
+    xx *= 1 + Math.abs(total) * 0.35;
+    zz *= 1 + Math.abs(total) * 0.35;
+    boost = Math.abs(total) * 1.6;
+  }
+
+  if (state === 'connecting') {
+    const snap = Math.sin(t * 0.003 + p.band * 0.9) > 0 ? 1 : -0.4;
+    const pull = 0.16 * snap * amp;
+    xx += Math.sin(p.lon * 5) * pull;
+    yy += Math.cos(p.lat * 5) * pull;
+    zz += Math.cos(p.lon * 5) * pull;
+    boost = snap > 0 ? 0.6 : 0;
+  }
+
+  if (state === 'weaving') {
+    const dir = p.band % 2 === 0 ? 1 : -1;
+    const braid = Math.sin(p.lon * 3 - t * 0.004 * dir) * 0.32 * amp;
+    yy += braid;
+    xx += Math.cos(p.lon * 3 - t * 0.004 * dir) * 0.18 * amp;
+    zz += Math.sin(p.lat * 4 + t * 0.003) * 0.15 * amp;
+    boost = Math.abs(braid) * 1.2;
+  }
+
+  if (state === 'composing') {
+    const sash = Math.sin(p.lat * 6 + p.lon * 3 - t * 0.0045) * 0.34 * amp;
+    yy += sash;
+    xx *= 1 + sash * 0.45;
+    zz *= 1 + sash * 0.45;
+    boost = Math.max(0, sash) * 1.8;
+  }
+
+  if (state === 'breathing') {
+    const b = Math.sin(t * 0.0024);
+    const breathe = 1 + 0.28 * b * amp;
+    xx *= breathe;
+    yy *= breathe;
+    zz *= breathe;
+    boost = Math.max(0, b) * 0.9;
+  }
+
+  if (state === 'shaping') {
+    const morph = (Math.sin(t * 0.0018) + 1) / 2;
+    const a = Math.atan2(y, x);
+    const star = Math.cos(4 * a) * 0.32;
+    const diamond = (Math.abs(Math.cos(a)) + Math.abs(Math.sin(a)) - 1.15) * 0.55;
+    const target = ((1 - morph) * star + morph * diamond) * amp;
+    const radius = 1 + target;
+    xx *= radius;
+    yy *= radius;
+    zz *= 1 - target * 0.3;
+    boost = Math.abs(target) * 1.5;
+  }
+
+  // --- NEW 7 STATES ---
+  if (state === 'vortex') {
+    const funnel = 0.45 + (y + 1) * 0.48; // Narrow at top/bottom, wide at other
+    const twist = (1 - y) * 2.2 * Math.sin(t * 0.0015) * amp;
+    const vx = xx * Math.cos(twist) - zz * Math.sin(twist);
+    const vz = xx * Math.sin(twist) + zz * Math.cos(twist);
+    xx = vx * funnel;
+    zz = vz * funnel;
+    yy += Math.sin(t * 0.005 + p.band * 0.6) * 0.12 * amp;
+    boost = (1 - funnel) * 1.1;
+  }
+
+  if (state === 'exploding') {
+    const cycle = (t * 0.00055) % 1;
+    // Fast burst outward, smooth elastic pull back
+    const burst = cycle < 0.35
+      ? Math.sin((cycle / 0.35) * (Math.PI / 2))
+      : Math.cos(((cycle - 0.35) / 0.65) * (Math.PI / 2));
+    const scatter = 1 + burst * (0.55 + p.seed2 * 0.45) * amp;
+    xx *= scatter;
+    yy *= scatter;
+    zz *= scatter;
+    boost = burst * 1.2;
+  }
+
+  if (state === 'magnetic') {
+    const field = Math.sin(p.lat * 2) * Math.sin(t * 0.0035) * 0.38 * amp;
+    const pinch = 1 - Math.abs(y) * 0.35 * amp;
+    xx = xx * pinch + Math.cos(p.lon) * field;
+    zz = zz * pinch + Math.sin(p.lon) * field;
+    yy *= 1 + Math.abs(field) * 0.45;
+    boost = Math.abs(field) * 1.6;
+  }
+
+  if (state === 'glitching') {
+    const step = Math.floor(t * 0.007);
+    const slice = Math.sin(p.band * 1.7 + step * 3.1);
+    if (slice > 0.55) {
+      const shift = Math.cos(step * 7.3) * 0.38 * amp;
+      xx += shift;
+      zz -= shift * 0.5;
+      boost = 1.1;
+    }
+  }
+
+  if (state === 'rippling') {
+    const wavePos = ((t * 0.0035) % 2.4) - 1.2; // Travels from -1.2 to +1.2
+    const dist = Math.abs(y - wavePos);
+    const ring = Math.exp(-dist * dist * 18);
+    const expand = 1 + ring * 0.42 * amp;
+    xx *= expand;
+    zz *= expand;
+    yy += (y - wavePos) * ring * 0.25 * amp;
+    boost = ring * 1.6;
+  }
+
+  if (state === 'orbiting') {
+    if (p.band % 3 === 0) {
+      // Detach every 3rd latitude band into tilted planetary rings
+      const ringR = 1.38 + (p.band % 2) * 0.16 * amp;
+      const orbitAngle = p.lon + t * 0.0022 * (p.band % 2 === 0 ? 1 : -1);
+      xx = Math.cos(orbitAngle) * ringR;
+      zz = Math.sin(orbitAngle) * ringR;
+      yy = Math.sin(orbitAngle * 2) * 0.14;
+      boost = 0.75;
+    } else {
+      // Core shrinks slightly
+      xx *= 0.72;
+      yy *= 0.72;
+      zz *= 0.72;
+    }
+  }
+
+  if (state === 'crystallizing') {
+    const morph = (Math.sin(t * 0.0022) + 1) / 2;
+    // Smooth ease in/out between sphere and quantized cubic grid
+    const snap = morph * morph * (3 - 2 * morph);
+    const grid = 0.42;
+    const gx = Math.round(xx / grid) * grid;
+    const gy = Math.round(yy / grid) * grid;
+    const gz = Math.round(zz / grid) * grid;
+    xx = xx * (1 - snap * amp * 0.85) + gx * (snap * amp * 0.85);
+    yy = yy * (1 - snap * amp * 0.85) + gy * (snap * amp * 0.85);
+    zz = zz * (1 - snap * amp * 0.85) + gz * (snap * amp * 0.85);
+    boost = snap * 0.9;
+  }
+
+  // Camera tilt
+  const tilt = 0.28;
+  const y2 = yy * Math.cos(tilt) - zz * Math.sin(tilt);
+  const z2 = yy * Math.sin(tilt) + zz * Math.cos(tilt);
+  yy = y2;
+  zz = z2;
+
+  const perspective = 2.8 / (2.8 - zz * 0.65);
+  const R = size * 0.305;
+
+  return {
+    x: xx * R * perspective,
+    y: yy * R * perspective,
+    z: zz,
+    scale: perspective,
+    boost
+  };
+}
+
+function draw(t) {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  ctx.clearRect(0, 0, w, h);
+
+  const cx = w / 2;
+  const cy = h / 2;
+  const time = (paused ? started : t) * speed;
+  const isDark = theme === 'dark';
+
+  const points = dots.map(p => ({ ...project(p, time), p }));
+
+  // Sort back-to-front for crisp 3D depth occlusion
+  points.sort((a, b) => a.z - b.z);
+
+  // Subtle ambient core glow for depth
+  const glow = ctx.createRadialGradient(cx, cy, size * 0.05, cx, cy, size * 0.44);
+  glow.addColorStop(0, isDark ? 'rgba(245,247,250,0.06)' : 'rgba(25,29,35,0.045)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.44, 0, Math.PI * 2);
+  ctx.fill();
+
+  // State-specific vector overlays
+  if (state === 'connecting' || state === 'crystallizing') {
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = isDark ? 'rgba(245,247,250,.28)' : 'rgba(30,34,40,.22)';
+    const maxDist = (size * 0.14) ** 2;
+    for (let i = 0; i < points.length; i += 2) {
+      const a = points[i];
+      if (a.z < -0.2) continue;
+      for (let j = i + 1; j < Math.min(i + 18, points.length); j++) {
+        const b = points[j];
+        const d = (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
+        if (d < maxDist) {
+          ctx.beginPath();
+          ctx.moveTo(cx + a.x, cy + a.y);
+          ctx.lineTo(cx + b.x, cy + b.y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  if (state === 'working' || state === 'orbiting') {
+    ctx.strokeStyle = isDark ? 'rgba(245,247,250,.32)' : 'rgba(30,34,40,.24)';
+    ctx.lineWidth = 1.25;
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath();
+      ctx.ellipse(
+        cx,
+        cy,
+        size * (0.34 + k * 0.03),
+        size * (0.11 + k * 0.04),
+        -0.5 + k * 0.55,
+        time * 0.0008 + k,
+        time * 0.0008 + k + Math.PI * 1.5
+      );
+      ctx.stroke();
+    }
+  }
+
+  if (state === 'searching') {
+    const scanAngle = (time * 0.0022) % (Math.PI * 2);
+    ctx.strokeStyle = isDark ? 'rgba(245,247,250,.26)' : 'rgba(30,34,40,.20)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, size * 0.37, size * 0.14, Math.sin(scanAngle) * 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Render particles
+  for (const q of points) {
+    const front = q.z > -0.1;
+    const baseAlpha = front ? 0.96 : 0.24;
+    const alpha = Math.min(1, baseAlpha * (0.65 + Math.max(0, q.z) * 0.35) + q.boost * 0.25);
+    const radius = (1.25 + Math.max(0, q.z) * 0.95 + q.boost * 0.85) * q.scale;
+
+    ctx.beginPath();
+    ctx.arc(cx + q.x, cy + q.y, Math.max(0.65, radius), 0, Math.PI * 2);
+    ctx.fillStyle = isDark
+      ? `rgba(245,247,250,${alpha.toFixed(3)})`
+      : `rgba(25,29,35,${alpha.toFixed(3)})`;
+    ctx.fill();
+  }
+
+  if (!paused) raf = requestAnimationFrame(draw);
+}
+
+function restart() {
+  started = performance.now();
+  if (!paused) {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(draw);
+  } else {
+    draw(started);
+  }
+}
+
+function setState(v) {
+  state = v;
+  statusEl.textContent = labels[v] || 'Thinking…';
+  canvas.setAttribute('aria-label', labels[v] || 'Thinking');
+  restart();
+}
+
+stateEl.addEventListener('change', e => setState(e.target.value));
+sizeEl.addEventListener('input', e => setSize(e.target.value));
+speedEl.addEventListener('input', e => {
+  speed = +e.target.value;
+  document.getElementById('speedValue').textContent = speed.toFixed(2).replace(/0$/, '') + '×';
+});
+intensityEl.addEventListener('input', e => {
+  intensity = +e.target.value;
+  document.getElementById('intensityValue').textContent = intensity.toFixed(1) + '×';
+});
+
+document.querySelectorAll('[data-theme]').forEach(b =>
+  b.addEventListener('click', () => {
+    theme = b.dataset.theme;
+    document.body.classList.toggle('dark', theme === 'dark');
+    document.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('active', x === b));
+    restart();
+  })
+);
+
+pauseBtn.addEventListener('click', () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  if (!paused) {
+    started = performance.now();
+    raf = requestAnimationFrame(draw);
+  } else {
+    cancelAnimationFrame(raf);
+  }
+});
+
+document.getElementById('restart').addEventListener('click', () => {
+  if (paused) {
+    paused = false;
+    pauseBtn.textContent = 'Pause';
+  }
+  restart();
+});
+
+setSize(size);
+raf = requestAnimationFrame(draw);
+</script>
+</body>
+</html>
