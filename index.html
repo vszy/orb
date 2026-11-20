@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thinking Orbs</title>
+<title>Orb</title>
 <style>
 :root{color-scheme:light;--bg:#f2f2f7;--ink:#1c1c1e;--muted:#8e8e93;--line:#c6c6c8;--accent:#007aff;--picker-row:44px;--picker-height:352px}
 *{box-sizing:border-box}
@@ -40,6 +40,8 @@ select:focus{border-bottom-color:var(--ink)}
 input[type=range]{height:24px;padding:0;background:transparent;accent-color:var(--ink);cursor:pointer}
 .theme-row{display:flex;gap:4px}
 .actions{display:flex;gap:4px;margin-top:4px}
+.config-reset{align-self:flex-start;margin-top:8px;padding:0;border:0;background:none;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;text-align:left}
+.config-reset:hover,.config-reset:focus-visible{color:var(--ink)}
 button{font:inherit}
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;color:var(--muted);background:none;border:0;border-radius:8px;cursor:pointer;transition:color .15s}
 .icon-btn:hover,.icon-btn:focus-visible{color:var(--ink)}
@@ -89,6 +91,7 @@ body.dark input[type=range]{accent-color:var(--ink)}
     <div class="field">
       <div class="field-head"><label>Dot size</label><span class="value" id="dotSizeValue">1.0×</span></div>
       <input id="dotSize" type="range" min="0.35" max="2.5" step="0.05" value="1">
+      <button type="button" class="config-reset" id="resetConfig">Reset controls</button>
     </div>
     <div class="field">
       <div class="field-head"><label>Theme</label></div>
@@ -154,6 +157,16 @@ const labels = {
 };
 
 const stateIds = Object.keys(labels);
+const CONFIG_STORAGE_KEY = 'thinking-orbs-config';
+const LEGACY_THEME_KEY = 'thinking-orbs-theme';
+const DEFAULT_CONFIG = {
+  theme: 'light',
+  state: 'working',
+  size: 270,
+  speed: 1,
+  intensity: 1,
+  dotSize: 1
+};
 
 let state = 'working',
     speed = 1,
@@ -205,10 +218,12 @@ function applyViewBox() {
   resize();
 }
 
-function setSize(v) {
+function setSize(v, opts = {}) {
   size = +v;
+  sizeEl.value = size;
   document.getElementById('sizeValue').textContent = size + 'px';
   applyViewBox();
+  if (!opts.skipSave) saveConfig();
 }
 
 function project(p, t) {
@@ -628,6 +643,7 @@ function setState(v, opts = {}) {
   else updatePickerWheel();
   applyViewBox();
   restart();
+  if (!opts.skipSave) saveConfig();
 }
 
 Object.keys(labels).forEach(id => {
@@ -679,22 +695,104 @@ stateListEl.addEventListener('scroll', () => {
   pickerScrollTimer = setTimeout(() => updatePickerWheel({ commit: true }), 120);
 }, { passive: true });
 
-scrollPickerToState(state, false);
-updatePickerWheel();
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function syncConfigLabels() {
+  document.getElementById('speedValue').textContent = speed.toFixed(2).replace(/0$/, '') + '×';
+  document.getElementById('intensityValue').textContent = intensity.toFixed(1) + '×';
+  document.getElementById('dotSizeValue').textContent = dotSize.toFixed(2).replace(/0$/, '') + '×';
+}
+
+function loadConfig() {
+  const cfg = { ...DEFAULT_CONFIG };
+  try {
+    const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p.theme === 'light' || p.theme === 'dark') cfg.theme = p.theme;
+      if (typeof p.state === 'string' && labels[p.state]) cfg.state = p.state;
+      if (typeof p.size === 'number') cfg.size = clamp(Math.round(p.size / 10) * 10, 140, 340);
+      if (typeof p.speed === 'number') cfg.speed = clamp(p.speed, 0.25, 2.5);
+      if (typeof p.intensity === 'number') cfg.intensity = clamp(p.intensity, 0.5, 1.8);
+      if (typeof p.dotSize === 'number') cfg.dotSize = clamp(p.dotSize, 0.35, 2.5);
+    } else {
+      const legacy = localStorage.getItem(LEGACY_THEME_KEY);
+      if (legacy === 'light' || legacy === 'dark') cfg.theme = legacy;
+    }
+  } catch (_) {}
+  return cfg;
+}
+
+function saveConfig() {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify({
+      theme,
+      state,
+      size,
+      speed,
+      intensity,
+      dotSize
+    }));
+  } catch (_) {}
+}
+
+function applyConfig(cfg) {
+  speed = cfg.speed;
+  intensity = cfg.intensity;
+  dotSize = cfg.dotSize;
+  speedEl.value = speed;
+  intensityEl.value = intensity;
+  dotSizeEl.value = dotSize;
+  syncConfigLabels();
+  applyTheme(cfg.theme, { redraw: false });
+  setSize(cfg.size, { skipSave: true });
+  setState(cfg.state, { instant: true, skipSave: true });
+  saveConfig();
+}
+
+function resetConfig() {
+  speed = DEFAULT_CONFIG.speed;
+  intensity = DEFAULT_CONFIG.intensity;
+  dotSize = DEFAULT_CONFIG.dotSize;
+  speedEl.value = speed;
+  intensityEl.value = intensity;
+  dotSizeEl.value = dotSize;
+  syncConfigLabels();
+  setSize(DEFAULT_CONFIG.size);
+  saveConfig();
+}
+
 sizeEl.addEventListener('input', e => setSize(e.target.value));
 speedEl.addEventListener('input', e => {
   speed = +e.target.value;
-  document.getElementById('speedValue').textContent = speed.toFixed(2).replace(/0$/, '') + '×';
+  syncConfigLabels();
+  saveConfig();
 });
 intensityEl.addEventListener('input', e => {
   intensity = +e.target.value;
-  document.getElementById('intensityValue').textContent = intensity.toFixed(1) + '×';
+  syncConfigLabels();
+  saveConfig();
 });
 dotSizeEl.addEventListener('input', e => {
   dotSize = +e.target.value;
-  document.getElementById('dotSizeValue').textContent = dotSize.toFixed(2).replace(/0$/, '') + '×';
+  syncConfigLabels();
   if (paused) draw(started);
+  saveConfig();
 });
+
+function applyTheme(t, { persist = false, redraw = false } = {}) {
+  theme = t === 'dark' ? 'dark' : 'light';
+  document.body.classList.toggle('dark', theme === 'dark');
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(x => {
+    const on = x.dataset.theme === theme;
+    x.classList.toggle('active', on);
+    x.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  if (persist) saveConfig();
+  if (redraw) restart();
+}
 
 function refreshIcons(root) {
   if (typeof lucide === 'undefined') return;
@@ -709,16 +807,7 @@ function updatePauseIcon() {
 }
 
 document.querySelectorAll('.theme-opt[data-theme]').forEach(b =>
-  b.addEventListener('click', () => {
-    theme = b.dataset.theme;
-    document.body.classList.toggle('dark', theme === 'dark');
-    document.querySelectorAll('.theme-opt[data-theme]').forEach(x => {
-      const on = x === b;
-      x.classList.toggle('active', on);
-      x.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    restart();
-  })
+  b.addEventListener('click', () => applyTheme(b.dataset.theme, { persist: true, redraw: true }))
 );
 
 pauseBtn.addEventListener('click', () => {
@@ -740,7 +829,9 @@ document.getElementById('restart').addEventListener('click', () => {
   restart();
 });
 
-setSize(size);
+document.getElementById('resetConfig').addEventListener('click', resetConfig);
+
+applyConfig(loadConfig());
 raf = requestAnimationFrame(draw);
 refreshIcons();
 </script>
