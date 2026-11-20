@@ -8,18 +8,21 @@
 :root{color-scheme:light;--bg:#fafafa;--ink:#111;--muted:#888;--line:#e0e0e0}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
-.layout{min-height:100vh;display:grid;grid-template-columns:minmax(148px,172px) minmax(0,1fr) minmax(248px,280px);gap:clamp(20px,4vw,40px);padding:32px clamp(16px,3vw,32px);max-width:1120px;margin:0 auto;width:100%;align-items:center}
-.state-panel{align-self:stretch;display:flex;flex-direction:column;justify-content:center;max-height:min(90vh,640px);overflow-y:auto;padding-right:4px}
-.panel-label{font-size:13px;font-weight:500;color:var(--ink);margin:0 0 10px}
-.state-list{display:flex;flex-direction:column;gap:1px;margin:0;padding:0}
-.state-opt{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:6px;padding:7px 8px;font-size:13px;color:var(--muted);cursor:pointer;transition:color .15s,background .15s}
-.state-opt:hover,.state-opt:focus-visible{color:var(--ink)}
-.state-opt.active{color:var(--ink);background:rgba(17,17,17,.06);font-weight:500}
-.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0;overflow:visible}
+.layout{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);gap:clamp(24px,5vw,48px);padding:clamp(24px,4vh,40px) clamp(16px,3vw,32px);max-width:1040px;margin:0 auto;width:100%;align-items:center}
+.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0;overflow:visible;padding-block:8px}
 .orb-wrap{width:270px;height:270px;overflow:visible}
 canvas{width:100%;height:100%;display:block;overflow:visible}
 .status{font-size:13px;color:var(--muted);font-weight:400}
-.controls{display:flex;flex-direction:column;gap:22px;justify-content:center;align-self:stretch}
+.right-rail{display:flex;flex-direction:row;align-items:stretch;gap:clamp(16px,3vw,24px);align-self:center;width:100%;max-height:calc(100vh - 48px);padding-block:8px}
+.state-panel{display:flex;flex-direction:column;flex:0 0 132px;min-width:0;min-height:0;max-height:calc(100vh - 48px)}
+.panel-label{font-size:13px;font-weight:500;color:var(--ink);margin:0 0 8px;flex-shrink:0}
+.state-list{display:flex;flex-direction:column;gap:1px;margin:0;padding:0;overflow-y:auto;min-height:0;flex:1;padding-right:4px}
+.state-list::-webkit-scrollbar{width:5px}
+.state-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.state-opt{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:6px;padding:6px 6px;font-size:12px;color:var(--muted);cursor:pointer;transition:color .15s,background .15s;flex-shrink:0}
+.state-opt:hover,.state-opt:focus-visible{color:var(--ink)}
+.state-opt.active{color:var(--ink);background:rgba(17,17,17,.06);font-weight:500}
+.controls{display:flex;flex-direction:column;gap:22px;justify-content:center;flex:1;min-width:0}
 .field{display:flex;flex-direction:column;gap:6px}
 .field-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
 .field-head label{cursor:default}
@@ -35,36 +38,20 @@ button{font:inherit}
 body.dark{color-scheme:dark;--bg:#0a0a0a;--ink:#f5f5f5;--muted:#737373;--line:#333}
 body.dark .state-opt.active{background:rgba(255,255,255,.08)}
 body.dark input[type=range]{accent-color:var(--ink)}
-@media(max-width:880px){.layout{grid-template-columns:1fr;max-width:360px;align-items:stretch}.state-panel{max-height:none;order:1}.stage{order:2}.controls{order:3}.state-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}.orb-wrap{width:220px;height:220px}}
+@media(max-width:880px){.layout{grid-template-columns:1fr;max-width:400px;align-items:stretch}.stage{order:1}.right-rail{order:2;flex-direction:row;max-height:none}.state-panel{flex:0 0 120px;max-height:min(52vh,360px)}.orb-wrap{width:220px;height:220px}}
 </style>
 </head>
 <body>
 <main class="layout">
-  <aside class="state-panel">
-    <p class="panel-label">States</p>
-    <nav class="state-list" id="stateList" aria-label="Animation states">
-      <button type="button" class="state-opt active" data-state="working" aria-current="true">Working</button>
-      <button type="button" class="state-opt" data-state="searching">Searching</button>
-      <button type="button" class="state-opt" data-state="solving">Solving</button>
-      <button type="button" class="state-opt" data-state="listening">Listening</button>
-      <button type="button" class="state-opt" data-state="connecting">Connecting</button>
-      <button type="button" class="state-opt" data-state="weaving">Weaving</button>
-      <button type="button" class="state-opt" data-state="composing">Composing</button>
-      <button type="button" class="state-opt" data-state="breathing">Breathing</button>
-      <button type="button" class="state-opt" data-state="shaping">Shaping</button>
-      <button type="button" class="state-opt" data-state="vortex">Vortex</button>
-      <button type="button" class="state-opt" data-state="exploding">Exploding</button>
-      <button type="button" class="state-opt" data-state="magnetic">Magnetic</button>
-      <button type="button" class="state-opt" data-state="glitching">Glitching</button>
-      <button type="button" class="state-opt" data-state="rippling">Rippling</button>
-      <button type="button" class="state-opt" data-state="orbiting">Orbiting</button>
-      <button type="button" class="state-opt" data-state="crystallizing">Crystallizing</button>
-    </nav>
-  </aside>
   <section class="stage">
     <div class="orb-wrap"><canvas id="orb" role="img" aria-label="Working"></canvas></div>
     <div class="status" id="status">Working…</div>
   </section>
+  <div class="right-rail">
+  <div class="state-panel">
+    <p class="panel-label">States</p>
+    <nav class="state-list" id="stateList" aria-label="Animation states"></nav>
+  </div>
   <section class="controls">
     <div class="field">
       <div class="field-head"><label>Size</label><span class="value" id="sizeValue">270px</span></div>
@@ -102,12 +89,14 @@ body.dark input[type=range]{accent-color:var(--ink)}
       </button>
     </div>
   </section>
+  </div>
 </main>
 
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script>
 const canvas = document.getElementById('orb');
 const ctx = canvas.getContext('2d');
+const stateListEl = document.getElementById('stateList');
 const sizeEl = document.getElementById('size');
 const speedEl = document.getElementById('speed');
 const intensityEl = document.getElementById('intensity');
@@ -131,7 +120,15 @@ const labels = {
   glitching: 'Recalibrating…',
   rippling: 'Broadcasting…',
   orbiting: 'Orbiting Systems…',
-  crystallizing: 'Structuring Data…'
+  crystallizing: 'Structuring Data…',
+  drifting: 'Drifting…',
+  focusing: 'Focusing…',
+  streaming: 'Streaming…',
+  sparkling: 'Sparkling…',
+  tunneling: 'Tunneling…',
+  melting: 'Melting…',
+  pondering: 'Pondering…',
+  syncing: 'Syncing…'
 };
 
 let state = 'working',
@@ -171,7 +168,9 @@ function resize() {
 }
 
 function viewPad() {
-  return state === 'exploding' ? 1.45 : 1;
+  if (state === 'exploding') return 1.45;
+  if (state === 'orbiting') return 1.32;
+  return 1;
 }
 
 function applyViewBox() {
@@ -379,6 +378,83 @@ function project(p, t) {
     boost = snap * 0.9;
   }
 
+  if (state === 'drifting') {
+    const wave = Math.sin(t * 0.001 + p.seed) * 0.2 * amp;
+    xx += Math.sin(p.lat * 2 + t * 0.0008) * wave;
+    yy += Math.cos(p.lon + t * 0.001) * wave * 0.85;
+    zz += Math.sin(p.lon * 2 - t * 0.00085) * wave;
+    boost = Math.abs(wave) * 0.85;
+  }
+
+  if (state === 'focusing') {
+    const pull = (Math.sin(t * 0.0028) + 1) / 2;
+    const squeeze = 1 - pull * 0.38 * amp;
+    xx *= squeeze;
+    yy *= squeeze;
+    zz *= squeeze;
+    boost = pull * 1.15;
+  }
+
+  if (state === 'streaming') {
+    const lane = Math.sin(p.lon * 2 - t * 0.005);
+    const flow = (lane + 1) / 2;
+    yy += (flow - 0.5) * 0.48 * amp;
+    const pinch = Math.abs(flow - 0.5) * 0.22 * amp;
+    xx *= 1 - pinch;
+    zz *= 1 - pinch;
+    boost = flow * 1.2;
+  }
+
+  if (state === 'sparkling') {
+    const twinkle = Math.sin(t * 0.011 + p.seed * 4);
+    if (twinkle > 0.55) {
+      const pop = (twinkle - 0.55) * 0.6 * amp;
+      xx *= 1 + pop;
+      yy *= 1 + pop;
+      zz *= 1 + pop;
+      boost = pop * 2.1;
+    }
+  }
+
+  if (state === 'tunneling') {
+    const phase = Math.sin(t * 0.002);
+    const open = Math.max(0, phase);
+    const pinch = 1 - open * 0.22 * amp;
+    const stretch = 1 + open * 0.32 * amp;
+    xx *= pinch;
+    yy *= pinch;
+    zz *= stretch;
+    boost = open * 0.95;
+  }
+
+  if (state === 'melting') {
+    const heat = Math.max(0, Math.sin(t * 0.002) * 0.5 + 0.5) * amp;
+    const sag = Math.max(0, y + 0.2) * heat * 0.38;
+    yy -= sag;
+    xx *= 1 - sag * 0.12;
+    zz *= 1 - sag * 0.12;
+    boost = sag * 1.35;
+  }
+
+  if (state === 'pondering') {
+    const sway = Math.sin(t * 0.0011) * 0.24 * amp;
+    const ripple = Math.cos(t * 0.0008 + p.band * 0.45) * sway;
+    xx += ripple;
+    yy += Math.sin(t * 0.0014 + p.seed) * 0.14 * amp;
+    zz += ripple * 0.65;
+    boost = Math.abs(ripple) * 0.65;
+  }
+
+  if (state === 'syncing') {
+    const beat = Math.floor(t * 0.0042);
+    const onBeat = beat % 2 === 0;
+    const scale = 1 + (onBeat ? 0.14 : -0.1) * amp;
+    xx *= scale;
+    yy *= scale;
+    zz *= scale;
+    boost = onBeat ? 0.85 : 0.15;
+  }
+
   // Camera tilt
   const tilt = 0.28;
   const y2 = yy * Math.cos(tilt) - zz * Math.sin(tilt);
@@ -475,7 +551,7 @@ function setState(v) {
   state = v;
   statusEl.textContent = labels[v] || 'Thinking…';
   canvas.setAttribute('aria-label', labels[v] || 'Thinking');
-  document.querySelectorAll('.state-opt[data-state]').forEach(btn => {
+  stateListEl.querySelectorAll('.state-opt[data-state]').forEach(btn => {
     const on = btn.dataset.state === v;
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-current', on ? 'true' : 'false');
@@ -484,9 +560,16 @@ function setState(v) {
   restart();
 }
 
-document.querySelectorAll('.state-opt[data-state]').forEach(btn =>
-  btn.addEventListener('click', () => setState(btn.dataset.state))
-);
+Object.keys(labels).forEach(id => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'state-opt' + (id === state ? ' active' : '');
+  btn.dataset.state = id;
+  btn.textContent = id.charAt(0).toUpperCase() + id.slice(1);
+  if (id === state) btn.setAttribute('aria-current', 'true');
+  btn.addEventListener('click', () => setState(id));
+  stateListEl.appendChild(btn);
+});
 sizeEl.addEventListener('input', e => setSize(e.target.value));
 speedEl.addEventListener('input', e => {
   speed = +e.target.value;
