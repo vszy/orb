@@ -438,7 +438,7 @@ function draw(t) {
     }
   }
 
-  if (state === 'working' || state === 'orbiting') {
+  if (state === 'orbiting') {
     ctx.strokeStyle = isDark ? 'rgba(245,247,250,.32)' : 'rgba(30,34,40,.24)';
     ctx.lineWidth = 1.25;
     for (let k = 0; k < 3; k++) {
@@ -454,15 +454,6 @@ function draw(t) {
       );
       ctx.stroke();
     }
-  }
-
-  if (state === 'searching') {
-    const scanAngle = (time * 0.0022) % (Math.PI * 2);
-    ctx.strokeStyle = isDark ? 'rgba(245,247,250,.26)' : 'rgba(30,34,40,.20)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, size * 0.37, size * 0.14, Math.sin(scanAngle) * 0.4, 0, Math.PI * 2);
-    ctx.stroke();
   }
 
   // Render particles
