@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Thinking Orbs</title>
 <style>
-:root{color-scheme:light;--bg:#fafafa;--ink:#111;--muted:#888;--line:#e0e0e0}
+:root{color-scheme:light;--bg:#f2f2f7;--ink:#1c1c1e;--muted:#8e8e93;--line:#c6c6c8;--accent:#007aff;--picker-row:44px;--picker-height:352px}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
 .layout{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);gap:clamp(24px,5vw,48px);padding:clamp(24px,4vh,40px) clamp(16px,3vw,32px);max-width:1040px;margin:0 auto;width:100%;align-items:center}
@@ -14,20 +14,29 @@ body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family
 canvas{width:100%;height:100%;display:block;overflow:visible}
 .status{font-size:13px;color:var(--muted);font-weight:400}
 .right-rail{display:flex;flex-direction:row;align-items:stretch;gap:clamp(16px,3vw,24px);align-self:center;width:100%;max-height:calc(100vh - 48px);padding-block:8px}
-.state-panel{display:flex;flex-direction:column;flex:0 0 132px;min-width:0;min-height:0;max-height:calc(100vh - 48px)}
-.panel-label{font-size:13px;font-weight:500;color:var(--ink);margin:0 0 8px;flex-shrink:0}
-.state-list{display:flex;flex-direction:column;gap:1px;margin:0;padding:0;overflow-y:auto;min-height:0;flex:1;padding-right:4px}
-.state-list::-webkit-scrollbar{width:5px}
-.state-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
-.state-opt{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:6px;padding:6px 6px;font-size:12px;color:var(--muted);cursor:pointer;transition:color .15s,background .15s;flex-shrink:0}
-.state-opt:hover,.state-opt:focus-visible{color:var(--ink)}
-.state-opt.active{color:var(--ink);background:rgba(17,17,17,.06);font-weight:500}
+.state-panel{display:flex;flex-direction:column;flex:0 0 184px;min-width:0;align-self:center}
+.panel-label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 10px;padding:0 6px;flex-shrink:0;text-align:center;opacity:.72}
+.picker-wrap{position:relative;height:var(--picker-height);flex-shrink:0;overflow:hidden;background:transparent}
+.picker-wrap::before,.picker-wrap::after{content:"";position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.9;z-index:3;pointer-events:none}
+.picker-wrap::before{top:calc(50% - var(--picker-row) / 2)}
+.picker-wrap::after{top:calc(50% + var(--picker-row) / 2)}
+.picker-fade{position:absolute;left:0;right:0;height:46%;z-index:2;pointer-events:none}
+.picker-fade-top{top:0;background:linear-gradient(to bottom,var(--bg) 0%,rgba(242,242,247,.95) 22%,rgba(242,242,247,.55) 48%,transparent 78%)}
+.picker-fade-bottom{bottom:0;background:linear-gradient(to top,var(--bg) 0%,rgba(242,242,247,.95) 22%,rgba(242,242,247,.55) 48%,transparent 78%)}
+.state-list{position:relative;z-index:1;display:flex;flex-direction:column;gap:0;margin:0;height:100%;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:calc(var(--picker-height) / 2 - var(--picker-row) / 2) 4px}
+.state-list::-webkit-scrollbar{display:none}
+.state-opt{display:flex;align-items:center;justify-content:center;width:100%;height:var(--picker-row);padding:0 6px;border:0;background:transparent;font-size:16px;font-weight:500;letter-spacing:-.03em;color:var(--muted);cursor:pointer;flex-shrink:0;scroll-snap-align:center;-webkit-tap-highlight-color:transparent;opacity:.52;transform:scale(.94);transition:opacity .14s ease,transform .14s ease,color .14s ease,font-size .14s ease;font-variant-numeric:tabular-nums}
+.state-opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.state-opt.active{opacity:1;transform:scale(1.04);font-size:17px;font-weight:700;color:var(--ink)}
 .controls{display:flex;flex-direction:column;gap:22px;justify-content:center;flex:1;min-width:0}
 .field{display:flex;flex-direction:column;gap:6px}
 .field-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
 .field-head label{cursor:default}
 .value{font-variant-numeric:tabular-nums}
-input[type=range]{width:100%;margin:0;height:24px;padding:0;background:transparent;accent-color:var(--ink);cursor:pointer}
+select,input[type=range]{width:100%;margin:0}
+select{appearance:none;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:8px 0;color:var(--ink);font:inherit;font-size:14px;outline:none;cursor:pointer}
+select:focus{border-bottom-color:var(--ink)}
+input[type=range]{height:24px;padding:0;background:transparent;accent-color:var(--ink);cursor:pointer}
 .theme-row{display:flex;gap:4px}
 .actions{display:flex;gap:4px;margin-top:4px}
 button{font:inherit}
@@ -35,10 +44,13 @@ button{font:inherit}
 .icon-btn:hover,.icon-btn:focus-visible{color:var(--ink)}
 .icon-btn.active{color:var(--ink)}
 .icon-btn svg{width:18px;height:18px;display:block}
-body.dark{color-scheme:dark;--bg:#0a0a0a;--ink:#f5f5f5;--muted:#737373;--line:#333}
-body.dark .state-opt.active{background:rgba(255,255,255,.08)}
+body.dark{color-scheme:dark;--bg:#000;--ink:#f5f5f7;--muted:#aeaeb2;--line:#48484a}
+body.dark .picker-fade-top{background:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.92) 22%,rgba(0,0,0,.55) 48%,transparent 78%)}
+body.dark .picker-fade-bottom{background:linear-gradient(to top,#000 0%,rgba(0,0,0,.92) 22%,rgba(0,0,0,.55) 48%,transparent 78%)}
+body.dark .state-opt.active{color:#fff}
+body.dark select:focus{border-bottom-color:var(--ink)}
 body.dark input[type=range]{accent-color:var(--ink)}
-@media(max-width:880px){.layout{grid-template-columns:1fr;max-width:400px;align-items:stretch}.stage{order:1}.right-rail{order:2;flex-direction:row;max-height:none}.state-panel{flex:0 0 120px;max-height:min(52vh,360px)}.orb-wrap{width:220px;height:220px}}
+@media(max-width:880px){.layout{grid-template-columns:1fr;max-width:420px;align-items:stretch}.stage{order:1}.right-rail{order:2;flex-direction:row;max-height:none}.state-panel{flex:0 0 168px}.orb-wrap{width:220px;height:220px}}
 </style>
 </head>
 <body>
@@ -50,9 +62,17 @@ body.dark input[type=range]{accent-color:var(--ink)}
   <div class="right-rail">
   <div class="state-panel">
     <p class="panel-label">States</p>
-    <nav class="state-list" id="stateList" aria-label="Animation states"></nav>
+    <div class="picker-wrap">
+      <div class="picker-fade picker-fade-top" aria-hidden="true"></div>
+      <div class="picker-fade picker-fade-bottom" aria-hidden="true"></div>
+      <nav class="state-list" id="stateList" aria-label="Animation states"></nav>
+    </div>
   </div>
   <section class="controls">
+    <div class="field">
+      <div class="field-head"><label for="stateSelect">State</label></div>
+      <select id="stateSelect" aria-label="Animation state"></select>
+    </div>
     <div class="field">
       <div class="field-head"><label>Size</label><span class="value" id="sizeValue">270px</span></div>
       <input id="size" type="range" min="140" max="340" step="10" value="270">
@@ -97,6 +117,7 @@ body.dark input[type=range]{accent-color:var(--ink)}
 const canvas = document.getElementById('orb');
 const ctx = canvas.getContext('2d');
 const stateListEl = document.getElementById('stateList');
+const stateSelectEl = document.getElementById('stateSelect');
 const sizeEl = document.getElementById('size');
 const speedEl = document.getElementById('speed');
 const intensityEl = document.getElementById('intensity');
@@ -547,29 +568,93 @@ function restart() {
   }
 }
 
-function setState(v) {
+let pickerProgrammatic = false;
+let pickerScrollTimer = 0;
+
+function pickerCenterY() {
+  return stateListEl.scrollTop + stateListEl.clientHeight / 2;
+}
+
+function scrollPickerToState(id, smooth = true) {
+  const btn = stateListEl.querySelector(`[data-state="${CSS.escape(id)}"]`);
+  if (!btn) return;
+  pickerProgrammatic = true;
+  const top = btn.offsetTop - (stateListEl.clientHeight - btn.offsetHeight) / 2;
+  stateListEl.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+  requestAnimationFrame(() => updatePickerWheel());
+  setTimeout(() => { pickerProgrammatic = false; }, smooth ? 350 : 0);
+}
+
+function updatePickerWheel({ commit = false } = {}) {
+  const center = pickerCenterY();
+  const span = stateListEl.clientHeight * 0.48;
+  let focus = null;
+  let min = Infinity;
+  stateListEl.querySelectorAll('.state-opt[data-state]').forEach(btn => {
+    const mid = btn.offsetTop + btn.offsetHeight / 2;
+    const d = Math.abs(mid - center);
+    const t = Math.min(1, d / span);
+    const on = d < 22;
+    const fade = 1 - t * 0.48;
+    if (on) {
+      btn.style.opacity = '1';
+      btn.style.transform = 'scale(1.04)';
+    } else {
+      btn.style.opacity = String(Math.max(0.52, fade));
+      btn.style.transform = `scale(${Math.max(0.9, 1 - t * 0.1)})`;
+    }
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-current', on ? 'true' : 'false');
+    if (d < min) {
+      min = d;
+      focus = btn;
+    }
+  });
+  if (commit && focus && focus.dataset.state !== state) {
+    setState(focus.dataset.state, { fromPicker: true });
+  }
+  return focus;
+}
+
+function setState(v, opts = {}) {
   state = v;
   statusEl.textContent = labels[v] || 'Thinking…';
   canvas.setAttribute('aria-label', labels[v] || 'Thinking');
-  stateListEl.querySelectorAll('.state-opt[data-state]').forEach(btn => {
-    const on = btn.dataset.state === v;
-    btn.classList.toggle('active', on);
-    btn.setAttribute('aria-current', on ? 'true' : 'false');
-  });
+  if (stateSelectEl.value !== v) stateSelectEl.value = v;
+  if (!opts.fromPicker) scrollPickerToState(v, !opts.instant);
+  else updatePickerWheel();
   applyViewBox();
   restart();
 }
 
 Object.keys(labels).forEach(id => {
+  const label = id.charAt(0).toUpperCase() + id.slice(1);
+  const opt = document.createElement('option');
+  opt.value = id;
+  opt.textContent = label;
+  stateSelectEl.appendChild(opt);
+
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'state-opt' + (id === state ? ' active' : '');
+  btn.className = 'state-opt';
   btn.dataset.state = id;
-  btn.textContent = id.charAt(0).toUpperCase() + id.slice(1);
-  if (id === state) btn.setAttribute('aria-current', 'true');
+  btn.textContent = label;
   btn.addEventListener('click', () => setState(id));
   stateListEl.appendChild(btn);
 });
+
+stateSelectEl.value = state;
+stateSelectEl.addEventListener('change', e => setState(e.target.value));
+
+stateListEl.addEventListener('scroll', () => {
+  updatePickerWheel();
+  if (pickerProgrammatic) return;
+  clearTimeout(pickerScrollTimer);
+  pickerScrollTimer = setTimeout(() => updatePickerWheel({ commit: true }), 120);
+}, { passive: true });
+
+scrollPickerToState(state, false);
+updatePickerWheel();
 sizeEl.addEventListener('input', e => setSize(e.target.value));
 speedEl.addEventListener('input', e => {
   speed = +e.target.value;
