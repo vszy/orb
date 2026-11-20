@@ -3,58 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thinking Orbs — Expanded & High-Motion</title>
+<title>Thinking Orbs</title>
 <style>
-:root{color-scheme:light;--bg:#f4f5f7;--panel:#fff;--ink:#17191d;--muted:#777d87;--line:#e6e8ec;--soft:#f7f8fa;--accent:#20242b}
+:root{color-scheme:light;--bg:#fafafa;--ink:#111;--muted:#888;--line:#e0e0e0}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:28px}
-.demo{width:min(940px,100%);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 18px 55px rgba(20,25,35,.07)}
-.stage{min-height:560px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:var(--soft);border-right:1px solid var(--line);padding:36px}
-.stage:before{content:"";position:absolute;inset:18px;border:1px solid rgba(130,138,150,.12);border-radius:14px;pointer-events:none}
-.orb-wrap{width:270px;height:270px;display:grid;place-items:center;position:relative}
-canvas{width:100%;height:100%;display:block;overflow:visible}
-.status{margin-top:20px;font-size:13px;font-weight:500;color:var(--muted);letter-spacing:.01em}
-.controls{padding:28px 26px;display:flex;flex-direction:column;gap:20px}
-.eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;color:#9298a2;text-transform:uppercase;margin-bottom:6px}
-h1{font-size:20px;line-height:1.2;margin:0;font-weight:650;letter-spacing:-.035em}
-.sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
-.field{display:flex;flex-direction:column;gap:9px}
-.field-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600}
-.value{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
-select,input[type=range]{width:100%}
-select{appearance:none;background:#fff;border:1px solid var(--line);border-radius:9px;padding:11px 36px 11px 12px;color:var(--ink);font:inherit;font-size:12px;font-weight:500;outline:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23777d87' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-input[type=range]{accent-color:#292d34;cursor:pointer}
-.pills{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
-.pill{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 10px;font-size:11px;font-weight:500;color:#646b75;cursor:pointer;transition:.18s}
-.pill.active{background:#22262d;border-color:#22262d;color:#fff}
-.actions{display:flex;gap:8px;margin-top:auto;padding-top:4px}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.layout{min-height:100vh;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:min(12vw,80px);padding:40px 32px;max-width:960px;margin:0 auto;width:100%}
+.stage{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.orb-wrap{width:270px;height:270px}
+canvas{width:100%;height:100%;display:block}
+.status{font-size:13px;color:var(--muted);font-weight:400}
+.controls{flex:0 0 min(300px,38%);display:flex;flex-direction:column;gap:22px;justify-content:center}
+.title{font-size:13px;font-weight:500;color:var(--ink);margin:0 0 4px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
+.field-head label{cursor:default}
+.value{font-variant-numeric:tabular-nums}
+select,input[type=range]{width:100%;margin:0}
+select{appearance:none;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:8px 0;color:var(--ink);font:inherit;font-size:14px;outline:none;cursor:pointer}
+select:focus{border-bottom-color:var(--ink)}
+input[type=range]{height:24px;padding:0;background:transparent;accent-color:var(--ink);cursor:pointer}
+.theme-row{display:flex;gap:4px}
+.actions{display:flex;gap:4px;margin-top:4px}
 button{font:inherit}
-.action{border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font-size:12px;font-weight:500;padding:10px 14px;cursor:pointer;flex:1;transition:.15s}
-.action:hover{opacity:.88}
-.action.primary{background:#22262d;border-color:#22262d;color:#fff}
-.note{font-size:10px;color:#9aa0a9;line-height:1.5;margin-top:-6px}
-body.dark{color-scheme:dark;--bg:#101216;--panel:#181b21;--ink:#f0f1f3;--muted:#9da4af;--line:#30343d;--soft:#14171c;--accent:#f0f1f3}
-body.dark .stage{background:var(--soft)}
-body.dark select,body.dark .pill,body.dark .action{background:#20242b;color:#e8eaf0;border-color:#363b45}
-body.dark .pill.active,body.dark .action.primary{background:#f0f1f3;color:#17191d;border-color:#f0f1f3}
-body.dark input[type=range]{accent-color:#eee}
-@media(max-width:700px){body{padding:12px}.demo{grid-template-columns:1fr}.stage{min-height:380px;border-right:0;border-bottom:1px solid var(--line)}.orb-wrap{width:220px;height:220px}.controls{padding:24px}}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;color:var(--muted);background:none;border:0;border-radius:8px;cursor:pointer;transition:color .15s}
+.icon-btn:hover,.icon-btn:focus-visible{color:var(--ink)}
+.icon-btn.active{color:var(--ink)}
+.icon-btn svg{width:18px;height:18px;display:block}
+body.dark{color-scheme:dark;--bg:#0a0a0a;--ink:#f5f5f5;--muted:#737373;--line:#333}
+body.dark select:focus{border-bottom-color:var(--ink)}
+body.dark input[type=range]{accent-color:var(--ink)}
+@media(max-width:700px){.layout{flex-direction:column;gap:40px;padding:28px 20px}.controls{flex:0 0 auto;width:100%;max-width:320px}.orb-wrap{width:220px;height:220px}}
 </style>
 </head>
 <body>
-<main class="demo">
+<main class="layout">
   <section class="stage">
     <div class="orb-wrap"><canvas id="orb" role="img" aria-label="Working"></canvas></div>
     <div class="status" id="status">Working…</div>
   </section>
   <section class="controls">
-    <header>
-      <div class="eyebrow">Vanilla canvas animation</div>
-      <h1>Thinking Orbs</h1>
-      <div class="sub">16 high-visibility animated states for AI assistants and agent interfaces.</div>
-    </header>
+    <p class="title">Thinking Orbs</p>
     <div class="field">
-      <div class="field-head"><label for="state">Animation state</label></div>
+      <div class="field-head"><label for="state">State</label></div>
       <select id="state">
         <optgroup label="Core States (Enhanced)">
           <option value="working">Working (Orbital Swirl)</option>
@@ -91,20 +82,32 @@ body.dark input[type=range]{accent-color:#eee}
       <input id="intensity" type="range" min="0.5" max="1.8" step="0.1" value="1">
     </div>
     <div class="field">
-      <div class="field-head"><label>Appearance</label></div>
-      <div class="pills">
-        <button class="pill active" data-theme="light">Light</button>
-        <button class="pill" data-theme="dark">Dark</button>
+      <div class="field-head"><label>Dot size</label><span class="value" id="dotSizeValue">1.0×</span></div>
+      <input id="dotSize" type="range" min="0.35" max="2.5" step="0.05" value="1">
+    </div>
+    <div class="field">
+      <div class="field-head"><label>Theme</label></div>
+      <div class="theme-row">
+        <button type="button" class="icon-btn theme-opt active" data-theme="light" aria-label="Light theme" aria-pressed="true">
+          <i data-lucide="sun"></i>
+        </button>
+        <button type="button" class="icon-btn theme-opt" data-theme="dark" aria-label="Dark theme" aria-pressed="false">
+          <i data-lucide="moon"></i>
+        </button>
       </div>
     </div>
     <div class="actions">
-      <button class="action" id="pause">Pause</button>
-      <button class="action primary" id="restart">Replay</button>
+      <button type="button" class="icon-btn" id="pause" aria-label="Pause">
+        <i data-lucide="pause"></i>
+      </button>
+      <button type="button" class="icon-btn" id="restart" aria-label="Replay">
+        <i data-lucide="rotate-ccw"></i>
+      </button>
     </div>
-    <div class="note">Canvas 2D · 16 States · Dynamic Depth & Trails · Zero Dependencies</div>
   </section>
 </main>
 
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script>
 const canvas = document.getElementById('orb');
 const ctx = canvas.getContext('2d');
@@ -112,6 +115,7 @@ const stateEl = document.getElementById('state');
 const sizeEl = document.getElementById('size');
 const speedEl = document.getElementById('speed');
 const intensityEl = document.getElementById('intensity');
+const dotSizeEl = document.getElementById('dotSize');
 const statusEl = document.getElementById('status');
 const pauseBtn = document.getElementById('pause');
 
@@ -137,6 +141,7 @@ const labels = {
 let state = 'working',
     speed = 1,
     intensity = 1,
+    dotSize = 1,
     paused = false,
     started = performance.now(),
     size = 270,
@@ -465,10 +470,10 @@ function draw(t) {
     const front = q.z > -0.1;
     const baseAlpha = front ? 0.96 : 0.24;
     const alpha = Math.min(1, baseAlpha * (0.65 + Math.max(0, q.z) * 0.35) + q.boost * 0.25);
-    const radius = (1.25 + Math.max(0, q.z) * 0.95 + q.boost * 0.85) * q.scale;
+    const radius = (1.25 + Math.max(0, q.z) * 0.95 + q.boost * 0.85) * q.scale * dotSize;
 
     ctx.beginPath();
-    ctx.arc(cx + q.x, cy + q.y, Math.max(0.65, radius), 0, Math.PI * 2);
+    ctx.arc(cx + q.x, cy + q.y, Math.max(0.65 * dotSize, radius), 0, Math.PI * 2);
     ctx.fillStyle = isDark
       ? `rgba(245,247,250,${alpha.toFixed(3)})`
       : `rgba(25,29,35,${alpha.toFixed(3)})`;
@@ -505,19 +510,40 @@ intensityEl.addEventListener('input', e => {
   intensity = +e.target.value;
   document.getElementById('intensityValue').textContent = intensity.toFixed(1) + '×';
 });
+dotSizeEl.addEventListener('input', e => {
+  dotSize = +e.target.value;
+  document.getElementById('dotSizeValue').textContent = dotSize.toFixed(2).replace(/0$/, '') + '×';
+  if (paused) draw(started);
+});
 
-document.querySelectorAll('[data-theme]').forEach(b =>
+function refreshIcons(root) {
+  if (typeof lucide === 'undefined') return;
+  lucide.createIcons(root ? { root } : undefined);
+}
+
+function updatePauseIcon() {
+  const name = paused ? 'play' : 'pause';
+  pauseBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+  pauseBtn.innerHTML = `<i data-lucide="${name}"></i>`;
+  refreshIcons(pauseBtn);
+}
+
+document.querySelectorAll('.theme-opt[data-theme]').forEach(b =>
   b.addEventListener('click', () => {
     theme = b.dataset.theme;
     document.body.classList.toggle('dark', theme === 'dark');
-    document.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('active', x === b));
+    document.querySelectorAll('.theme-opt[data-theme]').forEach(x => {
+      const on = x === b;
+      x.classList.toggle('active', on);
+      x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
     restart();
   })
 );
 
 pauseBtn.addEventListener('click', () => {
   paused = !paused;
-  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  updatePauseIcon();
   if (!paused) {
     started = performance.now();
     raf = requestAnimationFrame(draw);
@@ -529,13 +555,14 @@ pauseBtn.addEventListener('click', () => {
 document.getElementById('restart').addEventListener('click', () => {
   if (paused) {
     paused = false;
-    pauseBtn.textContent = 'Pause';
+    updatePauseIcon();
   }
   restart();
 });
 
 setSize(size);
 raf = requestAnimationFrame(draw);
+refreshIcons();
 </script>
 </body>
 </html>
