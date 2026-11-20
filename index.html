@@ -8,21 +8,23 @@
 :root{color-scheme:light;--bg:#fafafa;--ink:#111;--muted:#888;--line:#e0e0e0}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
-.layout{min-height:100vh;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:min(12vw,80px);padding:40px 32px;max-width:960px;margin:0 auto;width:100%}
-.stage{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.orb-wrap{width:270px;height:270px}
-canvas{width:100%;height:100%;display:block}
+.layout{min-height:100vh;display:grid;grid-template-columns:minmax(148px,172px) minmax(0,1fr) minmax(248px,280px);gap:clamp(20px,4vw,40px);padding:32px clamp(16px,3vw,32px);max-width:1120px;margin:0 auto;width:100%;align-items:center}
+.state-panel{align-self:stretch;display:flex;flex-direction:column;justify-content:center;max-height:min(90vh,640px);overflow-y:auto;padding-right:4px}
+.panel-label{font-size:13px;font-weight:500;color:var(--ink);margin:0 0 10px}
+.state-list{display:flex;flex-direction:column;gap:1px;margin:0;padding:0}
+.state-opt{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:6px;padding:7px 8px;font-size:13px;color:var(--muted);cursor:pointer;transition:color .15s,background .15s}
+.state-opt:hover,.state-opt:focus-visible{color:var(--ink)}
+.state-opt.active{color:var(--ink);background:rgba(17,17,17,.06);font-weight:500}
+.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0;overflow:visible}
+.orb-wrap{width:270px;height:270px;overflow:visible}
+canvas{width:100%;height:100%;display:block;overflow:visible}
 .status{font-size:13px;color:var(--muted);font-weight:400}
-.controls{flex:0 0 min(300px,38%);display:flex;flex-direction:column;gap:22px;justify-content:center}
-.title{font-size:13px;font-weight:500;color:var(--ink);margin:0 0 4px}
+.controls{display:flex;flex-direction:column;gap:22px;justify-content:center;align-self:stretch}
 .field{display:flex;flex-direction:column;gap:6px}
 .field-head{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
 .field-head label{cursor:default}
 .value{font-variant-numeric:tabular-nums}
-select,input[type=range]{width:100%;margin:0}
-select{appearance:none;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:8px 0;color:var(--ink);font:inherit;font-size:14px;outline:none;cursor:pointer}
-select:focus{border-bottom-color:var(--ink)}
-input[type=range]{height:24px;padding:0;background:transparent;accent-color:var(--ink);cursor:pointer}
+input[type=range]{width:100%;margin:0;height:24px;padding:0;background:transparent;accent-color:var(--ink);cursor:pointer}
 .theme-row{display:flex;gap:4px}
 .actions{display:flex;gap:4px;margin-top:4px}
 button{font:inherit}
@@ -31,44 +33,39 @@ button{font:inherit}
 .icon-btn.active{color:var(--ink)}
 .icon-btn svg{width:18px;height:18px;display:block}
 body.dark{color-scheme:dark;--bg:#0a0a0a;--ink:#f5f5f5;--muted:#737373;--line:#333}
-body.dark select:focus{border-bottom-color:var(--ink)}
+body.dark .state-opt.active{background:rgba(255,255,255,.08)}
 body.dark input[type=range]{accent-color:var(--ink)}
-@media(max-width:700px){.layout{flex-direction:column;gap:40px;padding:28px 20px}.controls{flex:0 0 auto;width:100%;max-width:320px}.orb-wrap{width:220px;height:220px}}
+@media(max-width:880px){.layout{grid-template-columns:1fr;max-width:360px;align-items:stretch}.state-panel{max-height:none;order:1}.stage{order:2}.controls{order:3}.state-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}.orb-wrap{width:220px;height:220px}}
 </style>
 </head>
 <body>
 <main class="layout">
+  <aside class="state-panel">
+    <p class="panel-label">States</p>
+    <nav class="state-list" id="stateList" aria-label="Animation states">
+      <button type="button" class="state-opt active" data-state="working" aria-current="true">Working</button>
+      <button type="button" class="state-opt" data-state="searching">Searching</button>
+      <button type="button" class="state-opt" data-state="solving">Solving</button>
+      <button type="button" class="state-opt" data-state="listening">Listening</button>
+      <button type="button" class="state-opt" data-state="connecting">Connecting</button>
+      <button type="button" class="state-opt" data-state="weaving">Weaving</button>
+      <button type="button" class="state-opt" data-state="composing">Composing</button>
+      <button type="button" class="state-opt" data-state="breathing">Breathing</button>
+      <button type="button" class="state-opt" data-state="shaping">Shaping</button>
+      <button type="button" class="state-opt" data-state="vortex">Vortex</button>
+      <button type="button" class="state-opt" data-state="exploding">Exploding</button>
+      <button type="button" class="state-opt" data-state="magnetic">Magnetic</button>
+      <button type="button" class="state-opt" data-state="glitching">Glitching</button>
+      <button type="button" class="state-opt" data-state="rippling">Rippling</button>
+      <button type="button" class="state-opt" data-state="orbiting">Orbiting</button>
+      <button type="button" class="state-opt" data-state="crystallizing">Crystallizing</button>
+    </nav>
+  </aside>
   <section class="stage">
     <div class="orb-wrap"><canvas id="orb" role="img" aria-label="Working"></canvas></div>
     <div class="status" id="status">Working…</div>
   </section>
   <section class="controls">
-    <p class="title">Thinking Orbs</p>
-    <div class="field">
-      <div class="field-head"><label for="state">State</label></div>
-      <select id="state">
-        <optgroup label="Core States (Enhanced)">
-          <option value="working">Working (Orbital Swirl)</option>
-          <option value="searching">Searching (Radar Sweep)</option>
-          <option value="solving">Solving (Quantum Scramble)</option>
-          <option value="listening">Listening (Audio Wave)</option>
-          <option value="connecting">Connecting (Neural Mesh)</option>
-          <option value="weaving">Weaving (Helix Braid)</option>
-          <option value="composing">Composing (Ribbon Flow)</option>
-          <option value="breathing">Breathing (Deep Pulse)</option>
-          <option value="shaping">Shaping (Morphing Geometry)</option>
-        </optgroup>
-        <optgroup label="New States">
-          <option value="vortex">Vortex (Tornado Funnel)</option>
-          <option value="exploding">Exploding (Supernova Burst)</option>
-          <option value="magnetic">Magnetic (Dipole Field)</option>
-          <option value="glitching">Glitching (Slice Shift)</option>
-          <option value="rippling">Rippling (Shockwave)</option>
-          <option value="orbiting">Orbiting (Planetary Rings)</option>
-          <option value="crystallizing">Crystallizing (Lattice Snap)</option>
-        </optgroup>
-      </select>
-    </div>
     <div class="field">
       <div class="field-head"><label>Size</label><span class="value" id="sizeValue">270px</span></div>
       <input id="size" type="range" min="140" max="340" step="10" value="270">
@@ -111,7 +108,6 @@ body.dark input[type=range]{accent-color:var(--ink)}
 <script>
 const canvas = document.getElementById('orb');
 const ctx = canvas.getContext('2d');
-const stateEl = document.getElementById('state');
 const sizeEl = document.getElementById('size');
 const speedEl = document.getElementById('speed');
 const intensityEl = document.getElementById('intensity');
@@ -174,13 +170,22 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+function viewPad() {
+  return state === 'exploding' ? 1.45 : 1;
+}
+
+function applyViewBox() {
+  const wrap = document.querySelector('.orb-wrap');
+  const extent = Math.round(size * viewPad());
+  wrap.style.width = extent + 'px';
+  wrap.style.height = extent + 'px';
+  resize();
+}
+
 function setSize(v) {
   size = +v;
-  const wrap = document.querySelector('.orb-wrap');
-  wrap.style.width = size + 'px';
-  wrap.style.height = size + 'px';
   document.getElementById('sizeValue').textContent = size + 'px';
-  resize();
+  applyViewBox();
 }
 
 function project(p, t) {
@@ -438,24 +443,6 @@ function draw(t) {
     }
   }
 
-  if (state === 'orbiting') {
-    ctx.strokeStyle = isDark ? 'rgba(245,247,250,.32)' : 'rgba(30,34,40,.24)';
-    ctx.lineWidth = 1.25;
-    for (let k = 0; k < 3; k++) {
-      ctx.beginPath();
-      ctx.ellipse(
-        cx,
-        cy,
-        size * (0.34 + k * 0.03),
-        size * (0.11 + k * 0.04),
-        -0.5 + k * 0.55,
-        time * 0.0008 + k,
-        time * 0.0008 + k + Math.PI * 1.5
-      );
-      ctx.stroke();
-    }
-  }
-
   // Render particles
   for (const q of points) {
     const front = q.z > -0.1;
@@ -488,10 +475,18 @@ function setState(v) {
   state = v;
   statusEl.textContent = labels[v] || 'Thinking…';
   canvas.setAttribute('aria-label', labels[v] || 'Thinking');
+  document.querySelectorAll('.state-opt[data-state]').forEach(btn => {
+    const on = btn.dataset.state === v;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-current', on ? 'true' : 'false');
+  });
+  applyViewBox();
   restart();
 }
 
-stateEl.addEventListener('change', e => setState(e.target.value));
+document.querySelectorAll('.state-opt[data-state]').forEach(btn =>
+  btn.addEventListener('click', () => setState(btn.dataset.state))
+);
 sizeEl.addEventListener('input', e => setSize(e.target.value));
 speedEl.addEventListener('input', e => {
   speed = +e.target.value;
